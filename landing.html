@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaleo — Tu DJ de WhatsApp</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --border: #222;
+            --text: #f0f0f0;
+            --muted: #888;
+            --accent: #1DB954;
+            --accent-glow: rgba(29, 185, 84, 0.3);
+            --wa: #25D366;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), #1ed760);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 2.5rem;
+            line-height: 1.5;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+            text-align: left;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: border-color 0.2s;
+        }
+
+        .step:hover {
+            border-color: var(--accent);
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-text strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .step-text span {
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-wa {
+            background: var(--wa);
+            color: #000;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-wa:hover {
+            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-copy {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-copy:hover {
+            border-color: var(--muted);
+        }
+
+        .btn-copy.copied {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .footer {
+            margin-top: 3rem;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .equalizer {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            height: 24px;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: eq 0.8s ease-in-out infinite alternate;
+        }
+
+        .bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .bar:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+        .bar:nth-child(3) { height: 24px; animation-delay: 0.3s; }
+        .bar:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+        .bar:nth-child(5) { height: 20px; animation-delay: 0.6s; }
+
+        @keyframes eq {
+            0% { transform: scaleY(0.3); }
+            100% { transform: scaleY(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="equalizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+
+        <div class="logo">🎧</div>
+        <h1>Jaleo</h1>
+        <p class="tagline">Tu DJ personal en WhatsApp.<br>Controla Spotify desde tu grupo con los amigos.</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <strong>Añade a Jaleo a tu grupo</strong>
+                    <span>Toca el botón de abajo para abrir WhatsApp y añadirlo directamente a tu grupo con amigos.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <strong>Vincula tu Spotify</strong>
+                    <span>Escribe cualquier canción en el grupo y Jaleo te mandará un link para conectar tu cuenta de Spotify.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <strong>Controla la música entre todos</strong>
+                    <span>Pon canciones, salta tracks, sube el volumen... todo desde el chat. Sin apps raras.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="https://wa.me/YOUR_PHONE_NUMBER" target="_blank" class="btn btn-wa">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Abrir WhatsApp
+            </a>
+            <button class="btn btn-copy" onclick="copyNumber(this)">
+                📋 Copiar número: YOUR_PHONE_NUMBER_DISPLAY
+            </button>
+        </div>
+
+        <div class="footer">
+            Hecho con ❤️ - <a href="https://github.com/feeerraan/jaleo">Jaleo</a>
+        </div>
+    </div>
+
+    <script>
+        const PHONE_NUMBER = 'YOUR_PHONE_NUMBER_WITH_COUNTRY_CODE';
+        const PHONE_DISPLAY = 'YOUR_PHONE_NUMBER_DISPLAY';
+
+        function copyNumber(btn) {
+            navigator.clipboard.writeText(PHONE_DISPLAY).then(() => {
+                btn.classList.add('copied');
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '📋 Copiar número: ' + PHONE_DISPLAY;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

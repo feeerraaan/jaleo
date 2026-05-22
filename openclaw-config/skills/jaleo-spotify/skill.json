@@ -1,0 +1,8 @@
+{
+  "name": "jaleo-spotify",
+  "description": "Control de Spotify mediante Jaleo-API Webhook. Maneja play, volume y multiusuario.",
+  "version": "1.0.0",
+  "author": "Ferran",
+  "entrypoint": "SKILL.md",
+  "status": "ready"
+}
