@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaleo — Tu DJ de WhatsApp</title>
+    <meta name="description" content="Jaleo: controla Spotify desde cualquier grupo de WhatsApp con mensajes de texto. Solo una persona necesita Spotify Premium. Proyecto open-source de Ferran Azpiazu.">
+    <meta property="og:title" content="Jaleo — Tu DJ de WhatsApp">
+    <meta property="og:description" content="Controla Spotify desde tu grupo de WhatsApp. Sin apps raras. Open-source.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --border: #222;
+            --text: #f0f0f0;
+            --muted: #888;
+            --accent: #1DB954;
+            --accent-glow: rgba(29, 185, 84, 0.3);
+            --wa: #25D366;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 520px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .status {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 50px;
+            padding: 0.35rem 0.9rem;
+            margin-bottom: 1.25rem;
+            opacity: 0.9;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), #1ed760);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: border-color 0.2s;
+        }
+
+        .step:hover {
+            border-color: var(--accent);
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-text strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .step-text span {
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .chip {
+            font-size: 0.75rem;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 0.3rem 0.8rem;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 4px 20px rgba(29, 185, 84, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 30px rgba(29, 185, 84, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--muted);
+        }
+
+        .footer {
+            margin-top: 3rem;
+            color: var(--muted);
+            font-size: 0.75rem;
+            line-height: 1.8;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .equalizer {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            height: 24px;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: eq 0.8s ease-in-out infinite alternate;
+        }
+
+        .bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .bar:nth-child(2) { height: 16px; animation-delay: 0.15s; }
+        .bar:nth-child(3) { height: 24px; animation-delay: 0.3s; }
+        .bar:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+        .bar:nth-child(5) { height: 20px; animation-delay: 0.6s; }
+
+        @keyframes eq {
+            0% { transform: scaleY(0.3); }
+            100% { transform: scaleY(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="equalizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+
+        <div class="logo">🎧</div>
+        <h1>Jaleo</h1>
+        <p class="tagline">Tu DJ personal en WhatsApp.<br>Controla Spotify desde tu grupo con los amigos.</p>
+
+        <div class="status">⏸ Instancia del bot en pausa · Página + código abiertos como portfolio</div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <strong>Añade a Jaleo a tu grupo</strong>
+                    <span>El bot vive en tu grupo de WhatsApp y escucha lo que escribís con amigos.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <strong>Vincula tu Spotify</strong>
+                    <span>Solo una persona necesita Spotify Premium. El resto pide canciones en el chat.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <strong>Controla la música entre todos</strong>
+                    <span>"Pon Rosalía", "siguiente", "volumen 50", "qué está sonando?"… lenguaje natural, sin comandos raros.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack">
+            <span class="chip">Node.js + Express</span>
+            <span class="chip">Spotify API</span>
+            <span class="chip">WhatsApp + IA</span>
+            <span class="chip">SQLite</span>
+            <span class="chip">Open-source GPL-3.0</span>
+        </div>
+
+        <div class="actions">
+            <a href="https://github.com/feeerraaan/jaleo" target="_blank" rel="noopener" class="btn btn-primary">
+                ⭐ Ver código en GitHub
+            </a>
+            <a href="/docs" class="btn btn-secondary">
+                📖 Documentación
+            </a>
+        </div>
+
+        <div class="footer">
+            Hecho por <a href="https://www.linkedin.com/in/ferranazpiazuadrover/" target="_blank" rel="noopener">Ferran Azpiazu Adrover</a><br>
+            <a href="https://github.com/feeerraaan/jaleo">Jaleo en GitHub</a> · GPL-3.0
+        </div>
+    </div>
+</body>
+</html>
